@@ -1,8 +1,9 @@
 use super::*;
-// use crate::prelude::*;
-use tweek::prelude::*;
-// use tweek::prelude::*;
-// use tweek::prelude::{AppDelegate, Theme};
+use tweek::{
+    gui::Theme,
+    tools::AppDelegate,
+};
+
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -15,22 +16,6 @@ use quicksilver::{
     lifecycle::{Event, State, Window},
     Error, Result,
 };
-
-/// This is intended for passing around configuration and state information
-/// throughout the controller/scene hierarchy.
-pub struct AppContext {
-    pub screen: Vector,
-    pub event_bus: EventBus,
-}
-
-impl AppContext {
-    pub fn new(screen: Vector) -> Self {
-        AppContext {
-            screen,
-            event_bus: EventBus::default(),
-        }
-    }
-}
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
@@ -115,14 +100,14 @@ impl State for Application {
                 }
             }
             Event::MouseButton(MouseButton::Left, ButtonState::Pressed) => {
-                if let Some(cell) = &mut self.front_controller {
+                // if let Some(cell) = &mut self.front_controller {
                 //     (cell.borrow_mut()).handle_mouse_down(&window.mouse().pos(), &mut self.app_state);
-                }
+                // }
             }
             Event::MouseButton(MouseButton::Left, ButtonState::Released) => {
-                if let Some(cell) = &mut self.front_controller {
+                // if let Some(cell) = &mut self.front_controller {
                     // (cell.borrow_mut()).handle_mouse_up(&window.mouse().pos(), &mut self.app_state);
-                }
+                // }
             }
             Event::MouseWheel(_xy) => {
                 // self.scene.handle_mouse_scroll(xy, &mut self.app_state);

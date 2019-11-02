@@ -1,6 +1,9 @@
 use super::*;
 
-use quicksilver::{geom::Vector, lifecycle::Window};
+use quicksilver::{
+    geom::Vector,
+    lifecycle::Window
+};
 
 use tweek::{
     core::{AppState},
@@ -54,7 +57,7 @@ pub trait Controller {
     /// The sync method is called from Quicksilver's update loop and eventually gets passed down
     /// to the Scene and lower level Tweek gui objects. It carries the AppContext as a mutable ref
     /// which contains the EventBus where events are propogated up (and possibly down, TBD)
-    fn update(&mut self, ctx: &mut AppContext, window: &mut Window);
+    fn update(&mut self, window: &mut Window);
 
     /// This is generally a passthru method to the Tweek gui components
     fn render(&mut self, theme: &mut Theme, window: &mut Window);
