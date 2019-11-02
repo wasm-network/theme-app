@@ -1,0 +1,36 @@
+[package]
+name = "tweek-theme"
+version = "0.1.0"
+authors = ["Hugh Lang <hughlang@gmail.com>"]
+edition = "2018"
+
+# [lib]
+# name = "theme_lib"
+# path = "src/lib.rs"
+
+# [[bin]]
+# name = "app"
+# path = "src/main.rs"
+
+[dependencies]
+log = "0.4"
+stretch = "0.2.2"
+
+[dependencies.tweek]
+# path = "../tweek-rust"
+git = "https://github.com/wasm-network/tweek-rust"
+
+[dependencies.quicksilver]
+default-features = false
+features = ["fonts", "complex_shapes"]
+# path = "../../quicksilver"
+git = "https://github.com/hughlang/quicksilver"
+branch = "modular_gl"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+stdweb = "0.4.12"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+env_logger = "0.6"
+color-backtrace = { version = "0.1" }
+
