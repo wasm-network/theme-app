@@ -12,7 +12,7 @@ use quicksilver::{
 use tweek::{
     core::{AppState},
     events::*,
-    gui::{Button, Displayable, Responder, Theme},
+    gui::{Button, Theme},
 };
 
 // Magic numbers for different nav commands
@@ -231,13 +231,12 @@ impl Controller for NavController {
         }
     }
 
-    fn handle_mouse_at(&mut self, pt: &Vector) -> bool {
+    fn handle_mouse_at(&mut self, _pt: &Vector) -> bool {
         // self.navbar.scene.handle_mouse_at(pt)
         false
     }
 
     fn handle_mouse_down(&mut self, pt: &Vector, state: &mut AppState) -> bool {
-        println!(">>> NAV handle_mouse_down");
         // self.navbar.scene.handle_mouse_down(pt, state);
         if let Some(cell) = &mut self.controllers.get_mut(self.front_idx) {
             (cell.borrow_mut()).handle_mouse_down(pt, state);

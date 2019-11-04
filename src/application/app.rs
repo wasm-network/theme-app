@@ -1,14 +1,9 @@
 use super::*;
+
 use tweek::{
-    gui::Theme,
-    tools::AppDelegate,
+    gui::{Stage, Scene, Theme},
 };
 
-
-use std::cell::RefCell;
-use std::rc::Rc;
-
-// #[allow(unused_imports)]
 use quicksilver::{
     geom::{Rectangle, Vector},
     graphics::Color,
@@ -16,6 +11,9 @@ use quicksilver::{
     lifecycle::{Event, State, Window},
     Error, Result,
 };
+
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
@@ -51,6 +49,38 @@ impl Application {
             front_controller: Some(Rc::new(RefCell::new(nav))),
         };
         Ok(s)
+    }
+    fn build_stage(screen: Vector) -> Stage {
+        let frame = Rectangle::new_sized(screen);
+        let mut stage = Stage::new(frame.clone());
+        stage.title = "Theme Edit".to_string();
+
+        let mut scene = Scene::new(frame);
+
+        // let numbers: Vec<u32> = (0..21).collect();
+        // let ds: Vec<String> = numbers.into_iter().map(|x| x.to_string()).collect();
+
+        // let frame = Rectangle::new((100.0, 200.0), (300.0, 200.0));
+        // let mut listbox = ListBox::new(frame);
+        // listbox.set_datasource(ds);
+        // listbox.row_border_style = BorderStyle::SolidLine(Color::from_hex("#EEEEEE"), 1.0);
+        // scene.add_control(Box::new(listbox));
+
+        /* Ignore: This is just an experiment in text clipping */
+        // let frame = Rectangle::new((500.0, 200.0), (200.0, 30.0));
+        // let mut text = Text::new(frame, "Clip this title");
+        // text.layer.font_style = FontStyle::new(20.0, Color::BLACK);
+        // text.layer.lock_style = true;
+        // text.text_align = TextAlign::Left;
+        // text.vert_align = VertAlign::Bottom;
+        // text.layer.debug = true;
+        // text.layer.border_style = BorderStyle::SolidLine(Color::from_hex("#CCCCCC"), 0.5);
+        // let subframe = Rectangle::new((500.0, 220.0), (200.0, 10.0));
+        // text.subframe = Some(subframe);
+        // scene.add_control(Box::new(text));
+
+        stage.add_scene(scene);
+        stage
     }
 }
 

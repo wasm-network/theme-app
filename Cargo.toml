@@ -17,8 +17,8 @@ log = "0.4"
 stretch = "0.2.2"
 
 [dependencies.tweek]
-# path = "../tweek-rust"
-git = "https://github.com/wasm-network/tweek-rust"
+path = "../tweek"
+# git = "https://github.com/wasm-network/tweek-rust"
 
 [dependencies.quicksilver]
 default-features = false

@@ -1,8 +1,11 @@
 /// A custom AppDelegate
 ///
-use crate::core::*;
-use crate::events::*;
-use crate::gui::*;
+///
+use tweek::{
+    core::*,
+    events::*,
+    gui::*,
+};
 
 use std::any::TypeId;
 
