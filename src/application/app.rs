@@ -121,7 +121,7 @@ impl State for Application {
             }
             Event::MouseMoved(pt) => {
                 if let Some(cell) = &mut self.front_controller {
-                    let hover = (cell.borrow_mut()).handle_mouse_at(pt);
+                    let hover = (cell.borrow_mut()).handle_mouse_at(pt, window);
                     if hover {
                         window.set_cursor(MouseCursor::Hand);
                     } else {

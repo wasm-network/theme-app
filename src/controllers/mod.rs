@@ -1,9 +1,5 @@
-pub use self::notify::*;
-pub use self::home::*;
-// pub use self::profile::*;
-// pub use self::settings::*;
+pub use self::builder::*;
+// pub use self::home::*;
 
-mod home;
-mod notify;
-// mod profile;
-// mod settings;
+mod builder;
+// mod home;

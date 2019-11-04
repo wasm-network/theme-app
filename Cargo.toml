@@ -22,7 +22,7 @@ path = "../tweek"
 
 [dependencies.quicksilver]
 default-features = false
-features = ["fonts", "complex_shapes"]
+features = ["complex_shapes"]
 # path = "../../quicksilver"
 git = "https://github.com/hughlang/quicksilver"
 branch = "modular_gl"

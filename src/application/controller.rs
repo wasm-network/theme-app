@@ -57,13 +57,13 @@ pub trait Controller {
     /// The sync method is called from Quicksilver's update loop and eventually gets passed down
     /// to the Scene and lower level Tweek gui objects. It carries the AppContext as a mutable ref
     /// which contains the EventBus where events are propogated up (and possibly down, TBD)
-    fn update(&mut self, window: &mut Window);
+    fn update(&mut self, window: &mut Window, state: &mut AppState);
 
     /// This is generally a passthru method to the Tweek gui components
     fn render(&mut self, theme: &mut Theme, window: &mut Window);
 
     /// This is generally a passthru method to the Tweek gui controls
-    fn handle_mouse_at(&mut self, _pt: &Vector) -> bool { false }
+    fn handle_mouse_at(&mut self, _pt: &Vector, _window: &mut Window) -> bool { false }
 
     /// This is generally a passthru method to the Tweek gui controls
     fn handle_mouse_down(&mut self, _pt: &Vector, _state: &mut AppState) -> bool { false }

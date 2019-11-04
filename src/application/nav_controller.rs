@@ -186,7 +186,7 @@ impl Controller for NavController {
 
     #[allow(dead_code)]
     #[allow(unreachable_patterns)]
-    fn update(&mut self, _window: &mut Window) {
+    fn update(&mut self, _window: &mut Window, _state: &mut AppState) {
         // let mut nav_event: Option<NavEvent> = None;
         // Only handle one event per run loop cycle.
         // if let Some(event) = self.events.borrow_mut().queue().pop() {
@@ -231,7 +231,7 @@ impl Controller for NavController {
         }
     }
 
-    fn handle_mouse_at(&mut self, _pt: &Vector) -> bool {
+    fn handle_mouse_at(&mut self, _pt: &Vector, _window: &mut Window) -> bool {
         // self.navbar.scene.handle_mouse_at(pt)
         false
     }
