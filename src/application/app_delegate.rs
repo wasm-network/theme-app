@@ -1,6 +1,10 @@
 /// A custom AppDelegate
 ///
 ///
+///
+use super::*;
+use crate::controllers::*;
+
 use tweek::{
     core::*,
     events::*,
@@ -8,6 +12,8 @@ use tweek::{
 };
 
 use std::any::TypeId;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use quicksilver::{
     geom::{Rectangle, Vector},
@@ -33,6 +39,7 @@ pub struct AppDelegate {
     theme: Theme,
     theme_picker: ThemePicker,
     app_state: AppState,
+    front_controller: Option<Rc<RefCell<dyn Controller>>>,
     stage_builders: Vec<Box<dyn Fn() -> Stage + 'static>>,
     view_index: usize,
     frames: usize,
@@ -66,6 +73,7 @@ impl AppDelegate {
             theme,
             theme_picker,
             app_state,
+            front_controller: None,
             stage_builders: Vec::new(),
             view_index: 0,
             frames: 0,
@@ -109,7 +117,7 @@ impl AppDelegate {
 #[allow(unused_variables)]
 impl State for AppDelegate {
     fn new() -> Result<AppDelegate> {
-        Err(Error::ContextError("The AppDelegate should not be run directly. Use the new(screen) method".to_string()))
+        Err(Error::ContextError("Use run_with to execute custom new method".to_string()))
     }
 
     fn update(&mut self, window: &mut Window) -> Result<()> {
@@ -170,6 +178,7 @@ impl State for AppDelegate {
 
         self.frames += 1;
         if (self.frames % FPS_INTERVAL) == 0 {
+            self.frames = 0;
             let out = format!("FPS: {:.2}", window.current_fps());
             self.nav_scene.set_field_value(&FieldValue::Text(out), TypeId::of::<Text>(), FPS_TAG);
         }
@@ -179,10 +188,7 @@ impl State for AppDelegate {
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         // Remove any lingering artifacts from the previous frame
-
-        // TODO: Theme should define this color
         window.clear(self.theme.bg_color)?;
-
         let _ = self.nav_scene.render(&mut self.theme, window);
         let _ = self.stage.render(&mut self.theme, window);
 

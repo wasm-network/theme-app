@@ -13,43 +13,50 @@ use quicksilver::{
 use tweek::{
     core::{AppState},
     events::*,
-    gui::{Button, Scene, ShapeDef, ShapeView, Displayable, Responder, Theme},
+    gui::*,
     tools::DrawShape,
 };
 
 #[allow(dead_code)]
-pub struct ThemeBuilder {
+pub struct ThemeEditor {
     frame: Rectangle,
-    scene: Scene,
-    // events: Rc<RefCell<EventQueue>>,
+    stage: Stage
 }
 
-impl ThemeBuilder {
-    pub fn new(frame: Rectangle) -> ThemeBuilder {
-        let scene = Scene::new(frame);
-
-        let controller = ThemeBuilder {
+impl ThemeEditor {
+    pub fn new(frame: Rectangle) -> ThemeEditor {
+        let stage = Stage::new(frame.clone());
+        let controller = ThemeEditor {
             frame,
-            scene,
-            // events: EventQueue::new(),
+            stage,
         };
-
-        // if let Some(nav) = nav {
-        //     let rc = Rc::new(RefCell::new(nav));
-        //     controller.nav = Rc::downgrade(&rc);
-        // }
         controller
+    }
+
+    fn build_stage(frame: Rectangle) -> Stage {
+        let mut stage = Stage::new(frame.clone());
+        stage.title = "Theme Builder".to_string();
+
+        let mut scene = Scene::new(frame);
+
+        let numbers: Vec<u32> = (0..21).collect();
+        let ds: Vec<String> = numbers.into_iter().map(|x| x.to_string()).collect();
+
+        let frame = Rectangle::new((100.0, 200.0), (300.0, 200.0));
+        let mut listbox = ListBox::new(frame);
+        listbox.set_datasource(ds);
+        listbox.row_border_style = BorderStyle::SolidLine(Color::from_hex("#EEEEEE"), 1.0);
+        scene.add_control(Box::new(listbox));
+
+        stage.add_scene(scene);
+        stage
     }
 }
 
-impl Controller for ThemeBuilder {
+impl Controller for ThemeEditor {
 
     fn view_will_load(&mut self) {
-        let frame = Rectangle::new((10.0, 70.0), (self.frame.width() - 20.0, self.frame.height() - 90.0));
-        let line_color = Color::from_hex("#333333");
-        let mut mesh = DrawShape::rectangle(&frame, None, Some(line_color), 3.0, 0.0);
-        let shape = ShapeView::new(frame, ShapeDef::Rectangle).with_mesh(&mut mesh);
-        self.scene.add_view(Box::new(shape));
+        self.stage = ThemeEditor::build_stage(self.frame.clone());
     }
 
     fn screen_title(&self) -> &str {
@@ -108,17 +115,17 @@ impl Controller for ThemeBuilder {
         //     ctx.event_bus.register_event(evt);
         // }
 
-        let _ = self.scene.update(window, state);
+        let _ = self.stage.update(window, state);
 
     }
 
     fn render(&mut self, theme: &mut Theme, window: &mut Window) {
-        let _ = self.scene.render(theme, window);
+        let _ = self.stage.render(theme, window);
         // let _ = self.navbar.render(theme, window);
     }
 
     fn handle_mouse_at(&mut self, pt: &Vector, window: &mut Window) -> bool {
-        self.scene.handle_mouse_at(pt, window)
+        self.stage.handle_mouse_at(pt, window)
 
     }
 
@@ -129,11 +136,11 @@ impl Controller for ThemeBuilder {
         //     (&mut *nav).notify("Booo");
         //     // rc.borrow_mut().notify("Mouse down");
         // }
-        self.scene.handle_mouse_down(pt, state)
+        self.stage.handle_mouse_down(pt, state)
     }
 
     fn handle_mouse_up(&mut self, pt: &Vector, state: &mut AppState) -> bool {
-        self.scene.handle_mouse_up(pt, state)
+        self.stage.handle_mouse_up(pt, state)
     }
 
 }
