@@ -1,8 +1,4 @@
-use super::*;
 use crate::application::*;
-
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use quicksilver::{
     geom::{Rectangle, Vector},
@@ -12,23 +8,34 @@ use quicksilver::{
 
 use tweek::{
     core::{AppState},
-    events::*,
+    // events::*,
     gui::*,
-    tools::DrawShape,
 };
 
 #[allow(dead_code)]
 pub struct ThemeEditor {
     frame: Rectangle,
-    stage: Stage
+    stage: Stage,
+    theme_picker: ThemePicker,
 }
 
 impl ThemeEditor {
     pub fn new(frame: Rectangle) -> ThemeEditor {
         let stage = Stage::new(frame.clone());
+        let mut theme_picker = ThemePicker::new();
+        theme_picker.add_theme(LIGHT_THEME, "Light theme", || {
+            let theme = ThemeBuilder::light_owl();
+            theme
+        });
+        theme_picker.add_theme(DARK_THEME, "Dark theme", || {
+            let theme = ThemeBuilder::night_owl();
+            theme
+        });
+
         let controller = ThemeEditor {
             frame,
             stage,
+            theme_picker
         };
         controller
     }
@@ -57,6 +64,10 @@ impl Controller for ThemeEditor {
 
     fn view_will_load(&mut self) {
         self.stage = ThemeEditor::build_stage(self.frame.clone());
+    }
+
+    fn set_theme(&mut self, theme: &mut Theme) {
+        self.stage.set_theme(theme);
     }
 
     fn screen_title(&self) -> &str {
@@ -143,5 +154,8 @@ impl Controller for ThemeEditor {
         self.stage.handle_mouse_up(pt, state)
     }
 
+    fn handle_mouse_scroll(&mut self, pt: &Vector, state: &mut AppState) {
+        self.stage.handle_mouse_scroll(pt, state);
+    }
 }
 

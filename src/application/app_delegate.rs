@@ -7,14 +7,11 @@ use crate::controllers::*;
 
 use tweek::{
     core::*,
-    events::*,
+    // events::*,
     gui::*,
 };
 
-use std::any::TypeId;
-use std::cell::RefCell;
-use std::rc::Rc;
-
+#[allow(unused_imports)]
 use quicksilver::{
     geom::{Rectangle, Vector},
     graphics::Color,
@@ -24,90 +21,71 @@ use quicksilver::{
 };
 
 // // Misc
-pub const BG_SCENE_ID: u32 = 100;
-const FPS_INTERVAL: usize = 40;
-const FPS_TAG: u32 = 901;
-const TITLE_TAG: u32 = 902;
+// pub const BG_SCENE_ID: u32 = 100;
+// const FPS_INTERVAL: usize = 40;
+// const FPS_TAG: u32 = 901;
+// const TITLE_TAG: u32 = 902;
 
 //-- Main -----------------------------------------------------------------------
 
 /// AppDelegate serves as a layer between the backend runloop and Tweek UI.
 ///
 pub struct AppDelegate {
-    stage: Stage,
-    nav_scene: Scene,
+    frame: Rectangle,
     theme: Theme,
-    theme_picker: ThemePicker,
     app_state: AppState,
-    front_controller: Option<Rc<RefCell<dyn Controller>>>,
-    stage_builders: Vec<Box<dyn Fn() -> Stage + 'static>>,
-    view_index: usize,
+    front_controller: NavController,
     frames: usize,
+    did_launch: bool,
 }
 
 impl AppDelegate {
     /// Constructor
     pub fn new(screen: Vector) -> Self {
+
         let mut theme = Theme::default();
         theme.font_size = 18.0;
         theme.bg_color = Color::from_hex("#FFFFEE");
 
-        let mut theme_picker = ThemePicker::new();
-        theme_picker.add_theme(LIGHT_THEME, "Light theme", || {
-            let theme = ThemeBuilder::light_owl();
-            theme
-        });
-        theme_picker.add_theme(DARK_THEME, "Dark theme", || {
-            let theme = ThemeBuilder::night_owl();
-            theme
-        });
-        let frame = Rectangle::new_sized(screen);
-        let nav_scene = Scene::new(frame);
-        let stage = Stage::new(frame);
+        // let mut theme_picker = ThemePicker::new();
+        // theme_picker.add_theme(LIGHT_THEME, "Light theme", || {
+        //     let theme = ThemeBuilder::light_owl();
+        //     theme
+        // });
+        // theme_picker.add_theme(DARK_THEME, "Dark theme", || {
+        //     let theme = ThemeBuilder::night_owl();
+        //     theme
+        // });
+        // let frame = Rectangle::new_sized(screen);
+        // let nav_scene = Scene::new(frame);
+        // let stage = Stage::new(frame);
         let mut app_state = AppState::new();
         app_state.window_size = (screen.x, screen.y);
 
+        let frame = Rectangle::new((0.0, 0.0), (screen.x, screen.y));
+        let mut nav_controller = NavController::new(frame.clone());
+
         let app = AppDelegate {
-            stage,
-            nav_scene,
+            frame,
             theme,
-            theme_picker,
             app_state,
-            front_controller: None,
-            stage_builders: Vec::new(),
-            view_index: 0,
+            front_controller: nav_controller,
             frames: 0,
+            did_launch: false,
         };
         app
     }
 
-    pub fn set_nav_scene(&mut self, scene: Scene) {
-        self.nav_scene = scene;
-    }
-
-    /// Save a Stage closure to load later
-    pub fn add_stage_builder<C>(&mut self, cb: C)
-    where
-        C: Fn() -> Stage + 'static,
-    {
-        self.stage_builders.push(Box::new(cb));
-    }
-
     /// Application lifecycle event called before runloop starts
     pub fn application_ready(&mut self) {
-        self.load_scene();
+
+        let controller = ThemeEditor::new(self.frame.clone());
+        self.front_controller.push_controller(Box::new(controller));
+        // self.front_controller.set
+        self.front_controller.view_will_load();
+        self.front_controller.set_theme(&mut self.theme);
     }
 
-    pub fn load_scene(&mut self) {
-        if let Some(cb) = self.stage_builders.get_mut(self.view_index) {
-            let mut group = cb();
-            self.nav_scene.set_field_value(&FieldValue::Text(group.title), TypeId::of::<Text>(), TITLE_TAG);
-            self.stage.scenes.clear();
-            self.stage.scenes.append(&mut group.scenes);
-            self.stage.set_theme(&mut self.theme);
-            self.stage.notify(&DisplayEvent::Ready);
-        }
-    }
 }
 
 // ************************************************************************************
@@ -122,66 +100,63 @@ impl State for AppDelegate {
 
     fn update(&mut self, window: &mut Window) -> Result<()> {
         for event in self.app_state.event_bus.into_iter() {
-            if let Ok(evt) = event.downcast_ref::<NavEvent>() {
-                log::debug!("NavEvent={:?}", evt);
-                match evt {
-                    NavEvent::Next => {
-                        self.view_index += 1;
-                        if self.view_index == self.stage_builders.len() {
-                            self.view_index = 0;
-                        }
-                        self.load_scene();
-                        return Ok(());
-                    }
-                    NavEvent::Back => {
-                        if self.view_index == 0 {
-                            self.view_index = self.stage_builders.len() - 1;
-                        } else {
-                            self.view_index -= 1;
-                        }
-                        self.load_scene();
-                        return Ok(());
-                    }
-                    _ => (),
-                }
-            }
-            if let Ok(evt) = event.downcast_ref::<SceneEvent>() {
-                log::debug!("SceneEvent={:?}", evt);
-                log::debug!("Source={:?}", event.event_info());
-                match evt {
-                    SceneEvent::Show(_) => {
-                        self.nav_scene.is_interactive = false;
-                    }
-                    SceneEvent::Hide(_) => {
-                        self.nav_scene.is_interactive = true;
-                    }
-                    _ => (),
-                }
-                self.stage.handle_event(evt, &event.event_info());
-            }
-            if let Ok(evt) = event.downcast_ref::<ThemeEvent>() {
-                log::debug!("ThemeEvent={:?}", evt);
-                match evt {
-                    ThemeEvent::Change(id) => {
-                        if let Some(theme) = self.theme_picker.load_theme(*id) {
-                            self.theme = theme;
-                            self.stage.set_theme(&mut self.theme);
-                        }
-                    } // _ => ()
-                }
-            }
+            // if let Ok(evt) = event.downcast_ref::<NavEvent>() {
+            //     log::debug!("NavEvent={:?}", evt);
+            //     match evt {
+            //         NavEvent::Next => {
+            //             self.view_index += 1;
+            //             if self.view_index == self.stage_builders.len() {
+            //                 self.view_index = 0;
+            //             }
+            //             self.load_scene();
+            //             return Ok(());
+            //         }
+            //         NavEvent::Back => {
+            //             if self.view_index == 0 {
+            //                 self.view_index = self.stage_builders.len() - 1;
+            //             } else {
+            //                 self.view_index -= 1;
+            //             }
+            //             self.load_scene();
+            //             return Ok(());
+            //         }
+            //         _ => (),
+            //     }
+            // }
+            // if let Ok(evt) = event.downcast_ref::<SceneEvent>() {
+            //     log::debug!("SceneEvent={:?}", evt);
+            //     log::debug!("Source={:?}", event.event_info());
+            //     match evt {
+            //         SceneEvent::Show(_) => {
+            //             self.nav_scene.is_interactive = false;
+            //         }
+            //         SceneEvent::Hide(_) => {
+            //             self.nav_scene.is_interactive = true;
+            //         }
+            //         _ => (),
+            //     }
+            //     self.stage.handle_event(evt, &event.event_info());
+            // }
+            // if let Ok(evt) = event.downcast_ref::<ThemeEvent>() {
+            //     log::debug!("ThemeEvent={:?}", evt);
+            //     match evt {
+            //         ThemeEvent::Change(id) => {
+            //             if let Some(theme) = self.theme_picker.load_theme(*id) {
+            //                 self.theme = theme;
+            //                 self.stage.set_theme(&mut self.theme);
+            //             }
+            //         } // _ => ()
+            //     }
+            // }
         }
+        self.front_controller.update(window, &mut self.app_state);
 
-        self.app_state.zero_offset();
-        let _ = self.nav_scene.update(window, &mut self.app_state);
-        let _ = self.stage.update(window, &mut self.app_state);
-
-        self.frames += 1;
-        if (self.frames % FPS_INTERVAL) == 0 {
-            self.frames = 0;
-            let out = format!("FPS: {:.2}", window.current_fps());
-            self.nav_scene.set_field_value(&FieldValue::Text(out), TypeId::of::<Text>(), FPS_TAG);
-        }
+        // self.frames += 1;
+        // if (self.frames % FPS_INTERVAL) == 0 {
+        //     self.frames = 0;
+        //     let out = format!("FPS: {:.2}", window.current_fps());
+        //     self.nav_scene.set_field_value(&FieldValue::Text(out), TypeId::of::<Text>(), FPS_TAG);
+        // }
 
         Ok(())
     }
@@ -189,9 +164,7 @@ impl State for AppDelegate {
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         // Remove any lingering artifacts from the previous frame
         window.clear(self.theme.bg_color)?;
-        let _ = self.nav_scene.render(&mut self.theme, window);
-        let _ = self.stage.render(&mut self.theme, window);
-
+        self.front_controller.render(&mut self.theme, window);
         Ok(())
     }
 
@@ -203,40 +176,30 @@ impl State for AppDelegate {
             }
             Event::MouseMoved(pt) => {
                 let mut hover: bool = false;
-                // FIXME: This hover value overrides previous result.
-                // hover = self.scene.handle_mouse_at(pt);
-                if self.nav_scene.is_interactive {
-                    hover = self.nav_scene.handle_mouse_at(pt, window);
-                }
-                if !hover {
-                    hover = self.stage.handle_mouse_at(pt, window);
-                }
+                self.front_controller.handle_mouse_at(pt, window);
             }
             Event::MouseButton(MouseButton::Left, ButtonState::Pressed) => {
-                self.stage.handle_mouse_down(&window.mouse().pos(), &mut self.app_state);
-                if self.nav_scene.is_interactive {
-                    self.nav_scene.handle_mouse_down(&window.mouse().pos(), &mut self.app_state);
-                }
+                self.front_controller.handle_mouse_down(&window.mouse().pos(), &mut self.app_state);
             }
             Event::MouseButton(MouseButton::Left, ButtonState::Released) => {
-                if self.nav_scene.is_interactive {
-                    self.nav_scene.handle_mouse_up(&window.mouse().pos(), &mut self.app_state);
-                }
-                self.stage.handle_mouse_up(&window.mouse().pos(), &mut self.app_state);
+                // if self.nav_scene.is_interactive {
+                //     self.nav_scene.handle_mouse_up(&window.mouse().pos(), &mut self.app_state);
+                // }
+                self.front_controller.handle_mouse_up(&window.mouse().pos(), &mut self.app_state);
             }
             Event::MouseWheel(xy) => {
-                self.stage.handle_mouse_scroll(xy, &mut self.app_state);
+                self.front_controller.handle_mouse_scroll(xy, &mut self.app_state);
             }
             Event::Key(key, ButtonState::Pressed) => match key {
                 Key::Escape => {
                     window.close();
                 }
                 _ => {
-                    self.stage.handle_key_command(key, window);
+                    // self.front_controller.handle_key_command(key, window);
                 }
             },
             Event::Typed(c) => {
-                self.stage.handle_key_press(*c, window);
+                // self.front_controller.handle_key_press(*c, window);
             }
             _ => {}
         };

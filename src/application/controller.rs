@@ -49,7 +49,10 @@ pub trait Controller {
     /// This is the first stage in the view lifecycle after new() is called. Here is where you should
     /// layout subviews, load data, and prepare for display.
     /// TODO: pass theme as param
-    fn view_will_load(&mut self) {}
+    fn view_will_load(&mut self);
+
+    /// Set the theme. This starts from the AppDelegate and passes down to the controller(s)
+    fn set_theme(&mut self, theme: &mut Theme);
 
     /// Method to signal that a controller will be leaving or entering the parent controller
     fn view_will_transition(&mut self, _event: NavEvent) {}
@@ -72,7 +75,7 @@ pub trait Controller {
     fn handle_mouse_up(&mut self, _pt: &Vector, _state: &mut AppState) -> bool { false }
 
     /// This is generally a passthru method to the Tweek gui controls
-    fn handle_mouse_scroll(&mut self, _pt: &Vector) {}
+    fn handle_mouse_scroll(&mut self, _pt: &Vector, _state: &mut AppState) {}
 
 
 }

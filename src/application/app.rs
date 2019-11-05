@@ -1,16 +1,11 @@
 use super::*;
-use crate::controllers::*;
 
 use quicksilver::{
     geom::{Rectangle, Vector},
     graphics::Color,
-    input::{ButtonState, Key, MouseButton, MouseCursor},
     lifecycle::{Event, State, Window},
     Error, Result,
 };
-
-use std::cell::RefCell;
-use std::rc::Rc;
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
@@ -27,13 +22,6 @@ impl Application {
         env_logger::builder().default_format_timestamp(false).default_format_module_path(false).init();
         #[cfg(not(target_arch = "wasm32"))]
         color_backtrace::install();
-
-        let frame = Rectangle::new((0.0, 0.0), (screen.x, screen.y));
-        let mut nav = NavController::new(frame.clone());
-
-        let controller = ThemeEditor::new(frame);
-        nav.push_controller(Rc::new(RefCell::new(controller)));
-        nav.view_will_load();
 
         let delegate = AppDelegate::new(screen.clone());
         let mut app = Application {
@@ -60,7 +48,7 @@ impl State for Application {
 
         //     TODO: Read EventBus
         // }
-        self.delegate.update(window);
+        self.delegate.update(window)?;
         Ok(())
     }
 
@@ -72,13 +60,13 @@ impl State for Application {
         // if let Some(cell) = &mut self.front_controller {
         //     (cell.borrow_mut()).render(&mut self.theme, window);
         // }
-        self.delegate.draw(window);
+        self.delegate.draw(window)?;
         Ok(())
     }
 
     #[allow(unused_assignments)]
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
-        self.delegate.event(event, window);
+        self.delegate.event(event, window)?;
         Ok(())
     }
 }
