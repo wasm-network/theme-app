@@ -16,7 +16,7 @@ pub struct Application {
 
 impl Application {
     pub fn new(screen: Vector) -> Result<Application> {
-        std::env::set_var("RUST_LOG", "main=trace,tweek=trace");
+        std::env::set_var("RUST_LOG", "main=trace,tweek=debug");
 
         #[cfg(not(target_arch = "wasm32"))]
         env_logger::builder().default_format_timestamp(false).default_format_module_path(false).init();

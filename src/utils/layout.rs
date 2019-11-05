@@ -1,7 +1,5 @@
 /// Tools for parsing and hacking layouts created by the Stretch flexbox crate
 ///
-
-#[allow(unused_imports)]
 use quicksilver::{
     geom::{Rectangle},
     graphics::{Background::Col, Color},
@@ -15,6 +13,8 @@ use stretch::{
     style::*
 };
 
+
+/// A wrapper for containing the resulting layout including all children
 #[derive(Debug, Clone)]
 pub struct NodeLayout {
     pub id: u32,
@@ -23,14 +23,10 @@ pub struct NodeLayout {
     pub children: Vec<NodeLayout>,
 }
 
-impl NodeLayout {
+impl NodeLayout {}
 
-}
-
-pub struct LayoutSolver {
-    // pub base_node: Node,
-    // pub base_layout: Layout,
-}
+/// A utility for calculating absolute positions from a deep copy of a Strech layout
+pub struct LayoutSolver {}
 
 impl LayoutSolver {
 
@@ -43,12 +39,15 @@ impl LayoutSolver {
             location: layout.location.clone(),
             children: Vec::new(),
         };
-        self.copy_layout(layout, &mut result);
+        self.abs_copy_layout(layout, &mut result);
         result
     }
 
-    pub fn copy_layout(&self, layout: &Layout, result: &mut NodeLayout) {
+    /// A recursive function for performing a deep copy of a Stretch Layout and changing coordinates from
+    /// relative to absolute.
+    fn abs_copy_layout(&self, layout: &Layout, result: &mut NodeLayout) {
         for (i, child) in layout.children.iter().enumerate() {
+
             let pos = Point { x: result.location.x + child.location.x, y: result.location.y + child.location.y };
             let mut item = NodeLayout {
                 id: i as u32,
@@ -57,12 +56,13 @@ impl LayoutSolver {
                 children: Vec::new(),
             };
             if child.children.len() > 0 {
-                self.copy_layout(&child, &mut item);
+                self.abs_copy_layout(&child, &mut item);
             }
             result.children.push(item);
         }
     }
 
+    /// Unused
     pub fn absolute_position(&self, layout: &Layout, path: Vec<usize>) -> Point<f32> {
         let mut position = Point { x: 0.0, y: 0.0 };
         let mut current = layout.clone();

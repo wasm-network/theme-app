@@ -6,6 +6,6 @@ use quicksilver::{
 };
 
 fn main() {
-    let screen = Vector::new(1200, 900);
+    let screen = Vector::new(1000, 600);
     run_with("Theme Edit", screen, Settings::default(), || Application::new(screen));
 }

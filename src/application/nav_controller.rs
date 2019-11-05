@@ -44,6 +44,7 @@ impl NavItem {
         }
     }
 }
+
 #[allow(dead_code)]
 pub struct NavController {
     frame: Rectangle,
@@ -55,7 +56,6 @@ pub struct NavController {
     front_idx: usize,
     /// The standard nav bar which has buttons on left and right side. Should be optional later
     // navbar: NavBar,
-    // events: Rc<RefCell<EventQueue>>,
     // next_target: Option<NavTarget>,
     transition: TransitionState,
     event_layer: EventLayer,
@@ -72,7 +72,6 @@ impl NavController {
             modal_controller: None,
             front_idx: 0,
             // navbar,
-            // events: EventQueue::new(),
             // next_target: None,
             transition: TransitionState::None,
             event_layer: EventLayer::new(),
@@ -120,7 +119,6 @@ impl Controller for NavController {
         // let theme = ThemeManager::nav_theme();
         // self.navbar.color = Some(theme.bg_color);
         // let cell = Rc::new(RefCell::new(self.event_layer));
-        // self.events.borrow_mut().add_handler(cell);
         if self.front_idx >= self.controllers.len() {
             return;
         }
@@ -192,59 +190,18 @@ impl Controller for NavController {
     #[allow(dead_code)]
     #[allow(unreachable_patterns)]
     fn update(&mut self, window: &mut Window, state: &mut AppState) {
-
-        // let mut nav_event: Option<NavEvent> = None;
-        // Only handle one event per run loop cycle.
-        // if let Some(event) = self.events.borrow_mut().queue().pop() {
-        //     match event.action {
-        //         Action::Button(tag) => {
-        //             match tag {
-        //                 BACK_BUTTON => { nav_event = Some(NavEvent::Back) },
-        //                 NEXT_BUTTON => { nav_event = Some(NavEvent::Next) },
-        //                 MODAL => { nav_event = Some(NavEvent::Modal) },
-        //                 _ => {}
-        //             }
-        //         },
-        //         Action::Selected(idx) => { nav_event = Some(NavEvent::Selected(idx)) },
-        //         _ => {}
-        //     }
-        // }
-
-        // if let Some(evt) = nav_event {
-        //     if let Some(controller) = &mut self.controllers.get_mut(self.front_idx) {
-        //         if let Some(target) = controller.borrow_mut().nav_target_for_event(&evt, ctx) {
-        //             self.next_target = Some(target);
-        //         }
-        //     }
-        //     ctx.event_bus.register_event(evt);
-        // }
-        if self.front_idx >= self.controllers.len() {
-            return;
-        }
+        // Check only here that front_idx is not out of bounds.
+        assert!(self.front_idx < self.controllers.len());
         let controller = &mut self.controllers[self.front_idx];
         controller.update(window, state);
-        // if let Some(modal) = &mut self.modal_controller {
-        //     // eprintln!("update modal");
-        //     modal.borrow_mut().update(ctx, window);
-        // }
     }
 
     fn render(&mut self, theme: &mut Theme, window: &mut Window) {
-        // let _ = self.scene.render(theme, window);
-        // let _ = self.navbar.render(theme, window);
-        // if let Some(cell) = &mut self.controllers.get_mut(self.front_idx) {
-        //     (cell.borrow_mut()).render(theme, window);
-        // }
-        // if let Some(modal) = &mut self.modal_controller {
-        //     // eprintln!("render modal");
-        //     modal.borrow_mut().render(theme, window);
-        // }
         let controller = &mut self.controllers[self.front_idx];
         controller.render(theme, window);
     }
 
     fn handle_mouse_at(&mut self, pt: &Vector, window: &mut Window) -> bool {
-        // self.navbar.scene.handle_mouse_at(pt)
         let controller = &mut self.controllers[self.front_idx];
         controller.handle_mouse_at(pt, window);
 
@@ -252,18 +209,12 @@ impl Controller for NavController {
     }
 
     fn handle_mouse_down(&mut self, pt: &Vector, state: &mut AppState) -> bool {
-        // self.navbar.scene.handle_mouse_down(pt, state);
-        // if let Some(cell) = &mut self.controllers.get_mut(self.front_idx) {
-        //     (cell.borrow_mut()).handle_mouse_down(pt, state);
-        // }
         let controller = &mut self.controllers[self.front_idx];
         controller.handle_mouse_down(pt, state);
         false
     }
 
     fn handle_mouse_up(&mut self, pt: &Vector, state: &mut AppState) -> bool {
-        // self.navbar.scene.handle_mouse_up(pt, state)
-        // self.scene.handle_mouse_up(pt, state)
         let controller = &mut self.controllers[self.front_idx];
         controller.handle_mouse_up(pt, state);
         false
