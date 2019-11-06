@@ -21,16 +21,28 @@ pub struct NodeLayout {
 impl NodeLayout {}
 
 pub struct LayoutBuilder {
-    stretch: Stretch
+    root: Node,
+    stretch: Stretch,
 }
 
 impl LayoutBuilder {
     pub fn new() -> Self {
-        let stretch = Stretch::new();
-        LayoutBuilder { stretch }
+        let mut stretch = Stretch::new();
+        let root = stretch.new_node(
+            Style::default(),
+            vec![]
+        ).unwrap();
+        LayoutBuilder { root, stretch }
     }
 
+    pub fn with_style(mut self, style: Style) -> Self {
+        self.stretch.set_style(self.root, style);
+        self
+    }
 
+    pub fn add_row(&mut self, height: f32) {
+
+    }
 }
 
 

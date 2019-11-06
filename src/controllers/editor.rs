@@ -181,6 +181,7 @@ impl ThemeEditor {
             },
             vec![]
         ).unwrap();
+
         // Create header row.
         let node = stretch.new_node(
             Style {
@@ -195,7 +196,7 @@ impl ThemeEditor {
         let mut body_node = stretch.new_node(
             Style {
                 size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height() - HEADER_H) },
-                flex_direction: FlexDirection::Column,
+                flex_direction: FlexDirection::Row,
                 justify_content: JustifyContent::FlexStart,
                 padding: body_padding,
                 ..Default::default()
@@ -206,7 +207,7 @@ impl ThemeEditor {
         let mut column1 = stretch.new_node(
             Style {
                 size: Size { width: Dimension::Auto, height: Dimension::Auto },
-                flex_direction: FlexDirection::Row,
+                flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::FlexStart,
                 padding: item_padding,
                 ..Default::default()
@@ -224,6 +225,16 @@ impl ThemeEditor {
             },
             Box::new(move |_| Ok(node_size)),
         ).unwrap();
+        stretch.add_child(column1, thin_row);
+
+        let mut thin_row = stretch.new_leaf(
+            Style {
+                size: Size { width: Dimension::Auto, height: Dimension::Points(50.0) },
+                ..Default::default()
+            },
+            Box::new(move |_| Ok(node_size)),
+        ).unwrap();
+        stretch.add_child(column1, thin_row);
 
         let node_size = Size { width: frame.width()/2.0, height: 200.0 };
         let mut fat_row = stretch.new_leaf(
@@ -233,10 +244,8 @@ impl ThemeEditor {
             },
             Box::new(move |_| Ok(node_size)),
         ).unwrap();
-
-        stretch.add_child(column1, thin_row);
-        stretch.add_child(column1, thin_row);
         stretch.add_child(column1, fat_row);
+
         stretch.add_child(body_node, column1);
         stretch.add_child(tree, body_node);
 
