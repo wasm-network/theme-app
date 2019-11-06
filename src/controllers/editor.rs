@@ -1,4 +1,5 @@
 use crate::application::*;
+use crate::utils::*;
 
 use quicksilver::{
     geom::{Rectangle, Vector},
@@ -15,7 +16,7 @@ use tweek::{
 
 use stretch::{
     geometry::*,
-    node::Node,
+    node::{Node, Stretch},
     result::Layout,
     style::*
 };
@@ -23,14 +24,13 @@ use stretch::{
 const COL1_WIDTH: f32 = 200.0;
 const COL2_WIDTH: f32 = 600.0;
 const COL3_WIDTH: f32 = 200.0;
-const MINI_BUTTON_SIZE: f32 = 40.0;
+const MINI_BUTTON_SIZE: f32 = 32.0;
 
 #[allow(dead_code)]
 pub struct ThemeEditor {
     frame: Rectangle,
     stage: Stage,
     theme_picker: ThemePicker,
-    layout: Option<Layout>
 }
 
 impl ThemeEditor {
@@ -50,7 +50,6 @@ impl ThemeEditor {
             frame,
             stage,
             theme_picker,
-            layout: None,
         };
         controller
     }
@@ -64,11 +63,11 @@ impl ThemeEditor {
         let col3 = Rectangle::new((COL1_WIDTH + COL2_WIDTH, 0.0), (COL3_WIDTH, frame.height()));
 
         // Make Scene for Column 1
-        let scene = self.layout_explorer_scene(&col1);
+        let scene = self.explorer_scene(&col1);
         stage.add_scene(scene);
 
         // Make Scene for Column 2
-        let scene = self.layout_main_scene(&col2);
+        let scene = self.main_scene(&col2);
         stage.add_scene(scene);
 
         // Make Scene for Column 3
@@ -80,50 +79,15 @@ impl ThemeEditor {
     }
 
     /// Define the first column layout
-    /// V:|<listbox>|<
-    ///     H:|<add button>|<remove button>|
-    /// >|<empty space>|
+    /// V:|-[themes title]-|-[listbox]-|-
+    ///     H:|-[add button]-|-[remove button]-|
+    /// -|-[empty space]-|
     ///
     /// See: https://vislyhq.github.io/stretch/docs/rust/
-    fn layout_explorer_scene(&mut self, frame: &Rectangle) -> Scene {
+    fn explorer_scene(&mut self, frame: &Rectangle) -> Scene {
 
         let mut scene = Scene::new(frame.clone()).with_id(1, "Explorer");
         scene.layer.border_style = BorderStyle::SolidLine(Color::BLACK, 1.0);
-
-        let mut layout = Node::new(
-            Style {
-                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height()) },
-                ..Default::default()
-            },
-            vec![]
-        );
-        let node1 = Node::new(
-            Style {
-                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(250.0) },
-                ..Default::default()
-            },
-            vec![],
-        );
-        layout.add_child(&node1);
-
-        let btn_node = Node::new(
-            Style {
-                size: Size { width: Dimension::Points(MINI_BUTTON_SIZE), height: Dimension::Points(MINI_BUTTON_SIZE) },
-                ..Default::default()
-            },
-            vec![],
-        );
-
-        let node2 = Node::new(
-            Style {
-                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(MINI_BUTTON_SIZE) },
-                justify_content: JustifyContent::FlexStart,
-                align_items: AlignItems::FlexStart,
-                ..Default::default()
-            },
-            vec![&btn_node, &btn_node],
-        );
-        layout.add_child(&node2);
 
         // Add Themes title
         let subframe = scene.sub_frame((0.0, 0.0), (frame.width(), 50.0));
@@ -141,13 +105,128 @@ impl ThemeEditor {
         let ds: Vec<String> = numbers.into_iter().map(|x| x.to_string()).collect();
         listbox.set_datasource(ds);
         scene.add_control(Box::new(listbox));
+
+        // Toolbar buttons to add/remove
+        let subframe = scene.sub_frame((0.0, 250.0), (MINI_BUTTON_SIZE, MINI_BUTTON_SIZE));
+        let mut button = Button::new(subframe).with_text("+");
+        button.layer.font_style = FontStyle::new(20.0, Color::BLACK);
+        button.layer.lock_style = true;
+        button.layer.border_style = BorderStyle::SolidLine(Color::BLACK, 1.0);
+        scene.add_control(Box::new(button));
+
+        let subframe = scene.sub_frame((MINI_BUTTON_SIZE, 250.0), (MINI_BUTTON_SIZE, MINI_BUTTON_SIZE));
+        let mut button = Button::new(subframe).with_text("–");
+        button.layer.font_style = FontStyle::new(20.0, Color::BLACK);
+        button.layer.border_style = BorderStyle::SolidLine(Color::BLACK, 1.0);
+        button.layer.lock_style = true;
+        scene.add_control(Box::new(button));
+
         scene
     }
 
-    fn layout_main_scene(&mut self, frame: &Rectangle) -> Scene {
+    /// Layout spec:
+    ///
+    /// V:|-[Text]-|-
+    ///     H:|-[add button]-|-[remove button]-|
+    /// -|-[empty space]-|
+    ///
+    fn main_scene(&self, frame: &Rectangle) -> Scene {
         let mut scene = Scene::new(frame.clone()).with_id(2, "Main");
         scene.layer.border_style = BorderStyle::SolidLine(Color::from_hex("#999999"), 1.0);
+
+        self.main_scene_layout(&frame);
         scene
+    }
+
+    /// Main Scene layout :
+    ///
+    ///
+    /// Column 1:
+    /// * Text
+    /// * Buttons: normal and primary
+    /// * Text Field
+    /// * Text Area
+    /// Column 2:
+    /// * ListBox
+    /// * Checkbox
+    /// * OptionGroup with radio buttons
+    /// See: https://vislyhq.github.io/stretch/docs/rust/
+    fn main_scene_layout(&self, frame: &Rectangle) {
+
+        const HEADER_H: f32 = 50.0;
+        let body_padding = Rect {
+            start: Dimension::Points(8.0),
+            end: Dimension::Points(8.0),
+            top: Dimension::Points(5.0),
+            bottom: Dimension::Points(5.0),
+            ..Default::default()
+        };
+        let mut stretch = Stretch::new();
+
+        let mut tree = stretch.new_node(
+            Style {
+                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height()) },
+                justify_content: JustifyContent::FlexStart,
+                align_items: AlignItems::FlexStart,
+                ..Default::default()
+            },
+            vec![]
+        ).unwrap();
+        // Create header row.
+        let node = stretch.new_node(
+            Style {
+                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(HEADER_H) },
+                ..Default::default()
+            },
+            vec![],
+        ).unwrap();
+        stretch.add_child(tree, node);
+
+        // Body container for GUI components
+        let node = stretch.new_node(
+            Style {
+                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height() - HEADER_H) },
+                justify_content: JustifyContent::FlexStart,
+                align_items: AlignItems::Center,
+                padding: body_padding,
+                ..Default::default()
+            },
+            vec![],
+        ).unwrap();
+        stretch.add_child(tree, node);
+
+        // let btn_node = stretch.new_node(
+        //     Style {
+        //         size: Size { width: Dimension::Points(MINI_BUTTON_SIZE), height: Dimension::Points(MINI_BUTTON_SIZE) },
+        //         ..Default::default()
+        //     },
+        //     vec![],
+        // );
+
+        // let node2 = stretch.new_node(
+        //     Style {
+        //         size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(MINI_BUTTON_SIZE) },
+        //         justify_content: JustifyContent::FlexStart,
+        //         align_items: AlignItems::FlexStart,
+        //         ..Default::default()
+        //     },
+        //     vec![&btn_node, &btn_node],
+        // );
+        // tree.add_child(&node2);
+        // stretch.compute_layout(tree, Size::undefined());
+        // let layout = stretch.layout(tree).unwrap();
+        // println!("node: {:#?}", layout);
+
+        // println!("child count: {:#?}", stretch.child_count(tree).unwrap());
+        // let items = stretch.children(tree).unwrap();
+        // for item in items {
+        //     println!("item: {:#?}", stretch.layout(item).unwrap());
+        // }
+        let mut solver = LayoutSolver::new();
+        let abs_layout = solver.absolute_layout(tree, &mut stretch);
+        eprintln!("node_layout={:#?}", abs_layout);
+
+        // Ok(*layout)
     }
 }
 
