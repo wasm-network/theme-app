@@ -20,6 +20,20 @@ pub struct NodeLayout {
 
 impl NodeLayout {}
 
+pub struct LayoutBuilder {
+    stretch: Stretch
+}
+
+impl LayoutBuilder {
+    pub fn new() -> Self {
+        let stretch = Stretch::new();
+        LayoutBuilder { stretch }
+    }
+
+
+}
+
+
 /// A utility for calculating absolute positions from a deep copy of a Strech layout
 pub struct LayoutSolver {
     // stretch: Stretch

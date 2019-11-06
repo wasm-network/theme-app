@@ -155,17 +155,26 @@ impl ThemeEditor {
 
         const HEADER_H: f32 = 50.0;
         let body_padding = Rect {
-            start: Dimension::Points(8.0),
-            end: Dimension::Points(8.0),
-            top: Dimension::Points(5.0),
-            bottom: Dimension::Points(5.0),
+            start: Dimension::Points(10.0),
+            end: Dimension::Points(10.0),
+            top: Dimension::Points(10.0),
+            bottom: Dimension::Points(10.0),
             ..Default::default()
         };
+        let item_padding = Rect {
+            start: Dimension::Points(10.0),
+            end: Dimension::Points(10.0),
+            top: Dimension::Points(10.0),
+            bottom: Dimension::Points(10.0),
+            ..Default::default()
+        };
+
         let mut stretch = Stretch::new();
 
         let mut tree = stretch.new_node(
             Style {
                 size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height()) },
+                flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::FlexStart,
                 align_items: AlignItems::FlexStart,
                 ..Default::default()
@@ -183,45 +192,54 @@ impl ThemeEditor {
         stretch.add_child(tree, node);
 
         // Body container for GUI components
-        let node = stretch.new_node(
+        let mut body_node = stretch.new_node(
             Style {
                 size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height() - HEADER_H) },
+                flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::FlexStart,
-                align_items: AlignItems::Center,
                 padding: body_padding,
                 ..Default::default()
             },
             vec![],
         ).unwrap();
-        stretch.add_child(tree, node);
 
-        // let btn_node = stretch.new_node(
-        //     Style {
-        //         size: Size { width: Dimension::Points(MINI_BUTTON_SIZE), height: Dimension::Points(MINI_BUTTON_SIZE) },
-        //         ..Default::default()
-        //     },
-        //     vec![],
-        // );
+        let mut column1 = stretch.new_node(
+            Style {
+                size: Size { width: Dimension::Auto, height: Dimension::Auto },
+                flex_direction: FlexDirection::Row,
+                justify_content: JustifyContent::FlexStart,
+                padding: item_padding,
+                ..Default::default()
+            },
+            vec![],
+        ).unwrap();
 
-        // let node2 = stretch.new_node(
-        //     Style {
-        //         size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(MINI_BUTTON_SIZE) },
-        //         justify_content: JustifyContent::FlexStart,
-        //         align_items: AlignItems::FlexStart,
-        //         ..Default::default()
-        //     },
-        //     vec![&btn_node, &btn_node],
-        // );
-        // tree.add_child(&node2);
-        // stretch.compute_layout(tree, Size::undefined());
-        // let layout = stretch.layout(tree).unwrap();
-        // println!("node: {:#?}", layout);
+        // let leaf = Node::new_leaf(Style::default(), Box::new(move |_| Ok(node_size)));
 
-        // println!("child count: {:#?}", stretch.child_count(tree).unwrap());
-        // let items = stretch.children(tree).unwrap();
-        // for item in items {
-        //     println!("item: {:#?}", stretch.layout(item).unwrap());
-        // }
+        let node_size = Size { width: frame.width()/2.0, height: 50.0 };
+        let mut thin_row = stretch.new_leaf(
+            Style {
+                size: Size { width: Dimension::Auto, height: Dimension::Points(50.0) },
+                ..Default::default()
+            },
+            Box::new(move |_| Ok(node_size)),
+        ).unwrap();
+
+        let node_size = Size { width: frame.width()/2.0, height: 200.0 };
+        let mut fat_row = stretch.new_leaf(
+            Style {
+                size: Size { width: Dimension::Auto, height: Dimension::Points(100.0) },
+                ..Default::default()
+            },
+            Box::new(move |_| Ok(node_size)),
+        ).unwrap();
+
+        stretch.add_child(column1, thin_row);
+        stretch.add_child(column1, thin_row);
+        stretch.add_child(column1, fat_row);
+        stretch.add_child(body_node, column1);
+        stretch.add_child(tree, body_node);
+
         let mut solver = LayoutSolver::new();
         let abs_layout = solver.absolute_layout(tree, &mut stretch);
         eprintln!("node_layout={:#?}", abs_layout);
