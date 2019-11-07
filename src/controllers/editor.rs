@@ -169,88 +169,93 @@ impl ThemeEditor {
             ..Default::default()
         };
 
-        let mut stretch = Stretch::new();
-
-        let mut tree = stretch.new_node(
-            Style {
+        let mut builder = LayoutBuilder::new().with_style(Style {
                 size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height()) },
                 flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::FlexStart,
                 align_items: AlignItems::FlexStart,
                 ..Default::default()
-            },
-            vec![]
-        ).unwrap();
+        });
+        let header_node = builder.add_row(builder.root, HEADER_H, None);
+        let column_w = frame.width()/2.0;
+//         let mut stretch = Stretch::new().with_style(style);
 
-        // Create header row.
-        let node = stretch.new_node(
-            Style {
-                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(HEADER_H) },
-                ..Default::default()
-            },
-            vec![],
-        ).unwrap();
-        stretch.add_child(tree, node);
+//         let mut tree = stretch.new_node(
+// ,
+//             vec![]
+//         ).unwrap();
 
+//         // Create header row.
+//         let node = stretch.new_node(
+//             Style {
+//                 size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(HEADER_H) },
+//                 ..Default::default()
+//             },
+//             vec![],
+//         ).unwrap();
+//         stretch.add_child(tree, node);
+        let body_node = builder.add_row(builder.root, frame.height() - HEADER_H, None);
         // Body container for GUI components
-        let mut body_node = stretch.new_node(
-            Style {
-                size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height() - HEADER_H) },
-                flex_direction: FlexDirection::Row,
-                justify_content: JustifyContent::FlexStart,
-                padding: body_padding,
-                ..Default::default()
-            },
-            vec![],
-        ).unwrap();
+        // let mut body_node = stretch.new_node(
+        //     Style {
+        //         size: Size { width: Dimension::Points(frame.width()), height: Dimension::Points(frame.height() - HEADER_H) },
+        //         flex_direction: FlexDirection::Row,
+        //         justify_content: JustifyContent::FlexStart,
+        //         padding: body_padding,
+        //         ..Default::default()
+        //     },
+        //     vec![],
+        // ).unwrap();
+        let column1 = builder.add_column(body_node, frame.width()/2.0, None);
+        // let mut column1 = stretch.new_node(
+        //     Style {
+        //         size: Size { width: Dimension::Auto, height: Dimension::Auto },
+        //         flex_direction: FlexDirection::Column,
+        //         justify_content: JustifyContent::FlexStart,
+        //         padding: item_padding,
+        //         ..Default::default()
+        //     },
+        //     vec![],
+        // ).unwrap();
 
-        let mut column1 = stretch.new_node(
-            Style {
-                size: Size { width: Dimension::Auto, height: Dimension::Auto },
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::FlexStart,
-                padding: item_padding,
-                ..Default::default()
-            },
-            vec![],
-        ).unwrap();
+        // // let leaf = Node::new_leaf(Style::default(), Box::new(move |_| Ok(node_size)));
+        let node = builder.add_object(column1, Size { width: column_w, height: 50.0 });
+        let node = builder.add_object(column1, Size { width: column_w, height: 50.0 });
+        let node = builder.add_object(column1, Size { width: column_w, height: 200.0 });
+        // let node_size = Size { width: frame.width()/2.0, height: 50.0 };
+        // let mut thin_row = stretch.new_leaf(
+        //     Style {
+        //         size: Size { width: Dimension::Auto, height: Dimension::Points(50.0) },
+        //         ..Default::default()
+        //     },
+        //     Box::new(move |_| Ok(node_size)),
+        // ).unwrap();
+        // stretch.add_child(column1, thin_row);
 
-        // let leaf = Node::new_leaf(Style::default(), Box::new(move |_| Ok(node_size)));
+        // let mut thin_row = stretch.new_leaf(
+        //     Style {
+        //         size: Size { width: Dimension::Auto, height: Dimension::Points(50.0) },
+        //         ..Default::default()
+        //     },
+        //     Box::new(move |_| Ok(node_size)),
+        // ).unwrap();
+        // stretch.add_child(column1, thin_row);
 
-        let node_size = Size { width: frame.width()/2.0, height: 50.0 };
-        let mut thin_row = stretch.new_leaf(
-            Style {
-                size: Size { width: Dimension::Auto, height: Dimension::Points(50.0) },
-                ..Default::default()
-            },
-            Box::new(move |_| Ok(node_size)),
-        ).unwrap();
-        stretch.add_child(column1, thin_row);
+        // let node_size = Size { width: frame.width()/2.0, height: 200.0 };
+        // let mut fat_row = stretch.new_leaf(
+        //     Style {
+        //         size: Size { width: Dimension::Auto, height: Dimension::Points(100.0) },
+        //         ..Default::default()
+        //     },
+        //     Box::new(move |_| Ok(node_size)),
+        // ).unwrap();
+        // stretch.add_child(column1, fat_row);
 
-        let mut thin_row = stretch.new_leaf(
-            Style {
-                size: Size { width: Dimension::Auto, height: Dimension::Points(50.0) },
-                ..Default::default()
-            },
-            Box::new(move |_| Ok(node_size)),
-        ).unwrap();
-        stretch.add_child(column1, thin_row);
+        // stretch.add_child(body_node, column1);
+        // stretch.add_child(tree, body_node);
 
-        let node_size = Size { width: frame.width()/2.0, height: 200.0 };
-        let mut fat_row = stretch.new_leaf(
-            Style {
-                size: Size { width: Dimension::Auto, height: Dimension::Points(100.0) },
-                ..Default::default()
-            },
-            Box::new(move |_| Ok(node_size)),
-        ).unwrap();
-        stretch.add_child(column1, fat_row);
-
-        stretch.add_child(body_node, column1);
-        stretch.add_child(tree, body_node);
-
-        let mut solver = LayoutSolver::new();
-        let abs_layout = solver.absolute_layout(tree, &mut stretch);
+        // let mut solver = LayoutSolver::new();
+        let abs_layout = builder.absolute_layout(builder.root);
         eprintln!("node_layout={:#?}", abs_layout);
 
         // Ok(*layout)
