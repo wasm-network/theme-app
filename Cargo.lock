@@ -2054,6 +2054,7 @@ dependencies = [
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "quicksilver 0.3.11 (git+https://github.com/hughlang/quicksilver?branch=modular_gl)",
+ "serde_json 1.0.41 (registry+https://github.com/rust-lang/crates.io-index)",
  "stdweb 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "stretch 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tweek 0.2.1-rc1",

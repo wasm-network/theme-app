@@ -15,6 +15,7 @@ path = "src/main.rs"
 [dependencies]
 log = "0.4"
 stretch = "0.3"
+serde_json = "1.0"
 
 [dependencies.tweek]
 path = "../tweek"
