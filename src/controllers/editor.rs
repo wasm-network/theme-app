@@ -130,11 +130,20 @@ impl ThemeEditor {
     ///     H:|-[add button]-|-[remove button]-|
     /// -|-[empty space]-|
     ///
-    fn main_scene(&self, frame: &Rectangle) -> Scene {
-        let mut scene = Scene::new(frame.clone()).with_id(2, "Main");
+    fn main_scene(&self, scene_frame: &Rectangle) -> Scene {
+        let mut scene = Scene::new(scene_frame.clone()).with_id(2, "Main");
         scene.layer.border_style = BorderStyle::SolidLine(Color::from_hex("#999999"), 1.0);
 
-        self.main_scene_layout(&frame);
+        let layout = self.main_scene_layout(&scene_frame);
+
+        // First button is child path: /Body/Column0/row0
+        let item = &layout.children[1].children[0].children[0];
+        let frame = Rectangle::new((item.location.x, item.location.y), (item.size.width, item.size.height));
+        let mut button = Button::new(frame).with_text("Normal");
+        button.layer.external_id = Some(Box::new(item.id));
+        scene.add_control(Box::new(button));
+
+
         scene
     }
 
@@ -151,7 +160,7 @@ impl ThemeEditor {
     /// * Checkbox
     /// * OptionGroup with radio buttons
     /// See: https://vislyhq.github.io/stretch/docs/rust/
-    fn main_scene_layout(&self, frame: &Rectangle) {
+    fn main_scene_layout(&self, frame: &Rectangle) -> NodeLayout {
 
         const HEADER_H: f32 = 50.0;
         let body_padding = Rect {
@@ -178,12 +187,13 @@ impl ThemeEditor {
         let header_node = builder.add_row(builder.root, HEADER_H, None);
         let column_w = frame.width()/2.0;
         let body_node = builder.add_row(builder.root, frame.height() - HEADER_H, None);
-        let column1 = builder.add_column(body_node, frame.width()/2.0, None);
-        let node = builder.add_object(column1, Size { width: column_w, height: 50.0 });
-        let node = builder.add_object(column1, Size { width: column_w, height: 50.0 });
-        let node = builder.add_object(column1, Size { width: column_w, height: 200.0 });
+        let column0 = builder.add_column(body_node, frame.width()/2.0, None);
+        let node = builder.add_object(column0, Size { width: column_w, height: 50.0 });
+        let node = builder.add_object(column0, Size { width: column_w, height: 50.0 });
+        let node = builder.add_object(column0, Size { width: column_w, height: 200.0 });
         let abs_layout = builder.absolute_layout(builder.root, (200.0, 0.0));
         eprintln!("node_layout={:#?}", abs_layout);
+        abs_layout
     }
 }
 

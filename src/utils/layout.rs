@@ -13,7 +13,7 @@ use stretch::{
 /// A wrapper for containing the resulting layout including all children
 #[derive(Debug, Clone)]
 pub struct NodeLayout {
-    pub id: u32,
+    pub id: Node,
     pub size: Size<f32>,
     pub location: Point<f32>,
     pub children: Vec<NodeLayout>,
@@ -79,7 +79,7 @@ impl LayoutBuilder {
 
     pub fn add_object(&mut self, parent: Node, size: Size<f32>) -> Node {
         let node_size = Size { width: Dimension::Points(size.width), height: Dimension::Points(size.height) };
-        let mut object = self.stretch.new_leaf(
+        let object = self.stretch.new_leaf(
             Style {
                 size: node_size,
                 ..Default::default()
@@ -106,7 +106,7 @@ impl LayoutBuilder {
         location.x += origin.0;
         location.y += origin.1;
         let mut result = NodeLayout {
-            id: 0,
+            id: node.clone(),
             size: layout.size.clone(),
             location: location,
             children: Vec::new(),
@@ -124,7 +124,7 @@ impl LayoutBuilder {
             let pos = Point { x: result.location.x + layout.location.x,
                             y: result.location.y + layout.location.y};
             let mut item = NodeLayout {
-                id: i as u32,
+                id: child.clone(),
                 size: layout.size.clone(),
                 location: pos,
                 children: Vec::new(),
